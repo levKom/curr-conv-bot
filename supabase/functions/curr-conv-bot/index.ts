@@ -185,7 +185,10 @@ bot.on(":text", async (ctx) => {
 
       const convertedAmount = Object.entries(rates).reduce(
         (acc, [curr, rate], index) => {
-          acc += `${(amount * rate).toLocaleString()} ${curr} ${SEPARATORS[index]} `;
+          acc += `${(amount * rate).toLocaleString(undefined, {
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 2,
+          })} ${curr} ${SEPARATORS[index]} `;
           return acc;
         },
         "",
