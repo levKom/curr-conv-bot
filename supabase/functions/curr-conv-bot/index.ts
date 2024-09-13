@@ -44,32 +44,12 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 
 const bot = new Bot(tgToken);
 
-const lessThanWeekAgo = (date) => {
+const lessThanXDaysAgo = (date, days = 1) => {
   const now = Date.now();
-  const dayInMs = 1000 * 60 * 60 * 24 * 7;
+  const dayInMs = 1000 * 60 * 60 * 24 * days;
   const dateTime = new Date(date).getTime();
 
   return now - dateTime < dayInMs;
-};
-
-const getLastCurrencyUpdateDate = async () => {
-  try {
-    const { data: dates } = await supabase
-      .from(RATES_TABLE)
-      .select("created_at")
-      .order("created_at", { ascending: false })
-      .limit(1);
-
-    const lastDate = dates[0];
-
-    if (lastDate) {
-      return new Date(lastDate.created_at);
-    } else {
-      return new Date(null);
-    }
-  } catch (e) {
-    return new Date(null);
-  }
 };
 
 const getLastCurrencyUpdateDateForBase = async (base) => {
@@ -165,10 +145,10 @@ const fetchCurrencyExchangeRates = async (userRequestBase) => {
 bot.on(":text", async (ctx) => {
   const normalizedMessage = ctx.msg.text
     .toUpperCase()
-    .replace(/[^\w.,]+/g, "")
+    .replace(/[^\w.,\u0400-\u04FF]+/g, "")
     .replace(/,/g, ".");
 
-  const match = normalizedMessage.match(/^([\d.]+)([A-Z]+)$/);
+  const match = normalizedMessage.match(/^([\d.]+)([A-Z\u0400-\u04FF]+)$/);
 
   if (match) {
     const amount = parseInt(match[1], 10);
@@ -180,7 +160,7 @@ bot.on(":text", async (ctx) => {
       const lastCurrencyUpdateDate =
         await getLastCurrencyUpdateDateForBase(base);
       let rates;
-      if (lessThanWeekAgo(lastCurrencyUpdateDate)) {
+      if (lessThanXDaysAgo(lastCurrencyUpdateDate)) {
         rates = await getCurrencyExchangeRates(base);
       } else {
         rates = await fetchCurrencyExchangeRates(base);
