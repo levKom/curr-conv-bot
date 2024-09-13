@@ -163,9 +163,12 @@ const fetchCurrencyExchangeRates = async (userRequestBase) => {
 };
 
 bot.on(":text", async (ctx) => {
-  const normalizedMessage = ctx.msg.text.toUpperCase().replace(/\W+/g, "");
+  const normalizedMessage = ctx.msg.text
+    .toUpperCase()
+    .replace(/[^\w.,]+/g, "")
+    .replace(/,/g, ".");
 
-  const match = normalizedMessage.match(/^(\d+)(\D+)$/);
+  const match = normalizedMessage.match(/^([\d.]+)([A-Z]+)$/);
 
   if (match) {
     const amount = parseInt(match[1], 10);
