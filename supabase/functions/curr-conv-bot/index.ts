@@ -123,13 +123,16 @@ const fetchRates = async (base) => {
   }
 };
 
-const fetchCurrencyExchangeRates = async (userRequestBase) => {
+const fetchCurrencyExchangeRates = async (
+  userRequestBase: string,
+  userId: number,
+) => {
   try {
     const { rates, base } = await fetchRates(userRequestBase);
 
     const { data, error } = await supabase
       .from(RATES_TABLE)
-      .insert({ rates, base })
+      .insert({ rates, base, requested_by: userId })
       .select("rates");
 
     if (error) {
@@ -163,7 +166,8 @@ bot.on(":text", async (ctx) => {
       if (lessThanXDaysAgo(lastCurrencyUpdateDate)) {
         rates = await getCurrencyExchangeRates(base);
       } else {
-        rates = await fetchCurrencyExchangeRates(base);
+        const userId = ctx.from?.id;
+        rates = await fetchCurrencyExchangeRates(base, userId);
       }
 
       const convertedAmount = Object.entries(rates).reduce(
