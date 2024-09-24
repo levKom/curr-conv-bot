@@ -1,11 +1,12 @@
 import { serve } from "https://deno.land/std@0.224.0/http/server.ts";
 // import cc from "npm:currency-codes@2.1.0";
-import { createClient } from "jsr:@supabase/supabase-js@2";
 import {
   Bot,
   webhookCallback,
 } from "https://deno.land/x/grammy@v1.30.0/mod.ts";
+import { Context } from "https://deno.land/x/grammy@v1.30.0/types.deno.ts";
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import { createClient } from "jsr:@supabase/supabase-js@2";
 
 // import { Hono } from "jsr:@hono/hono";
 // const functionName = "curr-conv-bot";
@@ -25,7 +26,10 @@ const UAH = ["uah", "юах", "грн", "гривень"];
 const CAD = ["cad", "кад"];
 const CZK = ["czk", "цзк"];
 
-const convertToCurrencyMap = (currencyName, currencyArray) => {
+const convertToCurrencyMap = (
+  currencyName: string,
+  currencyArray: string[],
+) => {
   return currencyArray.reduce((acc, curr) => {
     acc[curr.toUpperCase()] = currencyName;
     return acc;
@@ -66,10 +70,10 @@ const getLastCurrencyUpdateDateForBase = async (base) => {
     if (lastDate) {
       return new Date(lastDate.created_at);
     } else {
-      return new Date(null);
+      return new Date();
     }
   } catch (e) {
-    return new Date(null);
+    return new Date();
   }
 };
 
@@ -145,7 +149,7 @@ const fetchCurrencyExchangeRates = async (
   }
 };
 
-bot.on(":text", async (ctx) => {
+bot.on(":text", async (ctx: Context) => {
   const normalizedMessage = ctx.msg.text
     .toUpperCase()
     .replace(/[^\w.,\u0400-\u04FF]+/g, "")
@@ -154,7 +158,7 @@ bot.on(":text", async (ctx) => {
   const match = normalizedMessage.match(/^([\d.]+)([A-Z\u0400-\u04FF]+)$/);
 
   if (match) {
-    const amount = parseInt(match[1], 10);
+    const amount = parseFloat(match[1]);
     const currency = match[2];
 
     const base = CURRENCY_MAP[currency];
