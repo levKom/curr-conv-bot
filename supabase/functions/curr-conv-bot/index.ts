@@ -25,6 +25,8 @@ const USD = ["usd", "us", "юсд"];
 const UAH = ["uah", "юах", "грн", "гривень"];
 const CAD = ["cad", "кад"];
 const CZK = ["czk", "цзк"];
+const REVEAL = 'PUPSARIN LOH!';
+alert(REVEAL);
 
 const convertToCurrencyMap = (
   currencyName: string,
